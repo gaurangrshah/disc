@@ -52,3 +52,28 @@ npx shadcn-ui@latest add button
 
 > This will add a button component locally to the `app/components/ui/` folder
 
+
+
+Add Auth File Structure:
+
+```bash
+├── app
+│   ├── (auth)
+│   │   ├── (routes)
+│   │   │   ├── login
+│   │   │   │   └── page.tsx
+│   │   │   └── register
+│   │   │       └── page.tsx
+│   │   └── layout.tsx
+```
+
+> **Note**: here we've created both the login and register routes using organizational wrappers called [Route Groups](https://nextjs.org/docs/app/building-your-application/routing/route-groups) as directories allowing us to effectively co-locate our routes with their dependencies logically.
+>
+> ### Convention
+>
+> A route group can be created by wrapping a folder's name in parenthesis: `(folderName)`
+
+
+
+
+
