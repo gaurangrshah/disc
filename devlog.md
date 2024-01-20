@@ -333,3 +333,242 @@ export function ModeToggle() {
 
 
 
+## DB Setup
+
+### Prisma
+
+```bash
+yarn add -D prisma
+```
+
+```bash
+npx prisma init
+```
+
+> this will create a prisma folder with the `schema.prisma` file 
+>
+> ```js
+> // This is your Prisma schema file,
+> // learn more about it in the docs: https://pris.ly/d/prisma-schema
+> 
+> generator client {
+>   provider = "prisma-client-js"
+> }
+> 
+> datasource db {
+>   provider = "postgresql"
+>   url      = env("DATABASE_URL")
+> }
+> ```
+>
+> and update your `.env ` file to include a boiler for your `DATABASE_URL`
+>
+> ```bash
+> # .env
+> 
+> # This was inserted by `prisma init`:
+> # Environment variables declared in this file are automatically made available to Prisma.
+> # See the documentation for more detail: https://pris.ly/d/prisma-schema#accessing-environment-variables-from-the-schema
+> 
+> # Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB and CockroachDB.
+> # See the documentation for all the connection string options: https://pris.ly/d/connection-strings
+> 
+> DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
+> ```
+>
+> **Note:** this connection string needs to be replaced with your own database connection string.
+>
+> Once you complete the setup you can select prisma as the option to connect to your database via, and this will also provide you with a connection string for the new database.
+
+![image-20240119193642011](https://cdn.jsdelivr.net/gh/gaurangrshah/_shots@master/uPic/2024/image-20240119193642011.png)
+
+> **Note:** credit card is required for the free plan - so use privacy.com
+> (*Also see bitwarden for db credentials)
+
+
+
+Next we need to configure our `schema.prisma` file to use our mysql flavored planetscale db.
+
+```js
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+```
+
+> Now, you can write your Prisma models or modify the existing ones. See Prisma documentation on [Prisma schema](https://www.prisma.io/docs/concepts/components/prisma-schema) to learn more.
+
+We can now add some of the models we'll need:
+
+```js
+// prisma/schema.prisma
+
+model Profile {
+  id       String @id @default(uuid())
+  userId   String @unique
+  name     String
+  imageUrl String @db.Text
+  email    String @db.Text
+
+  servers  Server[]
+  members  Member[]
+  channels Channel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Server {
+  id         String @id @default(uuid())
+  name       String
+  imageUrl   String @db.Text
+  inviteCode String @db.Text
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  members  Member[]
+  channels Channel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+}
+
+enum MemberRole {
+  ADMIN
+  MODERATOR
+  GUEST
+}
+
+model Member {
+  id   String     @id @default(uuid())
+  role MemberRole @default(GUEST)
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  serverId  String
+  server    Server  @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([serverId])
+}
+
+enum ChannelType {
+  TEXT
+  AUDIO
+  VIDEO
+}
+
+model Channel {
+  id   String      @id @default(uuid())
+  name String
+  type ChannelType @default(TEXT)
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  serverId  String
+  server    Server  @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([serverId])
+}
+```
+
+
+
+### Migrating Prisma DB
+
+Finally, once you are ready to push your schema to PlanetScale, run `prisma db push` against your PlanetScale database to update the schema in your database:
+
+```bash
+npx prisma generate
+```
+
+> ````shell
+> ✔ Installed the @prisma/client and prisma packages in your project
+> 
+> ✔ Generated Prisma Client (v5.8.1) to ./node_modules/@prisma/client in 132ms
+> 
+> Start using Prisma Client in Node.js (See: https://pris.ly/d/client)
+> ```
+> import { PrismaClient } from '@prisma/client'
+> const prisma = new PrismaClient()
+> ```
+> or start using Prisma Client at the edge (See: https://pris.ly/d/accelerate)
+> ```
+> import { PrismaClient } from '@prisma/client/edge'
+> const prisma = new PrismaClient()
+> ```
+> 
+> See other ways of importing Prisma Client: http://pris.ly/d/importing-client
+> 
+> ┌─────────────────────────────────────────────────────────────┐
+> │  Deploying your app to serverless or edge functions?        │
+> │  Try Prisma Accelerate for connection pooling and caching.  │
+> │  https://pris.ly/cli/accelerate                             │
+> └─────────────────────────────────────────────────────────────┘
+> ````
+
+```bash
+npx prisma db push
+```
+
+> ```shell
+> Environment variables loaded from .env
+> Prisma schema loaded from prisma/schema.prisma
+> Datasource "db": MySQL database "disc" at "aws.connect.psdb.cloud"
+> 
+> 🚀  Your database is now in sync with your Prisma schema. Done in 1.17s
+> 
+> ✔ Generated Prisma Client (v5.8.1) to ./node_modules/@prisma/client in 284ms
+> ```
+
+
+
+### Prisma Client
+
+```ts
+// lib/db.ts
+
+import { PrismaClient } from "@prisma/client";
+
+declare global {
+  var prisma: PrismaClient | undefined;
+}
+
+const prisma = globalThis.prisma || new PrismaClient();
+
+// hack: ensures that hot reload doesn't cause a new client to be created on each reload
+if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma;
+
+
+async function main() {
+  // ... you will write your Prisma Client queries here
+}
+
+main()
+  .then(async () => {
+    await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })
+```
+
