@@ -680,6 +680,33 @@ export default async function SetupPage() {
 
 
 
+> This was added later but pertains to the auth portion. This is the utlity function we'll use to authenticate users on our api routes.
+>
+> ```ts
+> // lib/current-profile.ts
+> 
+> import { auth } from '@clerk/nextjs';
+> 
+> import { db } from '@/lib/db';
+> 
+> export const currentProfile = async () => {
+>   const { userId } = auth();
+> 
+>   if (!userId) {
+>     return null;
+>   }
+> 
+>   const profile = await db.profile.findUnique({
+>     where: { userId },
+>   });
+>   
+>   return profile;
+> };
+> 
+> ```
+
+
+
 ## Forms
 
 ```bash
@@ -754,44 +781,58 @@ export const InitialModal = () => {
   
   
 	return (
-     <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-          <div className='space-y08 px-6'>
-            <div className='flex items-center justify-center text-center'>
-              TODO: Add image upload
-            </div>
+  <Form {...form}>
+    <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+      <div className='space-y08 px-6'>
+        <div className='flex items-center justify-center text-center'>
+          <FormField
+            control={form.control}
+            name='imageUrl'
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <FileUpload
+                    endpoint='serverImage'
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          ></FormField>
+        </div>
 
-            <FormField
-              control={form.control}
-              name='name'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel
-                    className='text-xs font-bold uppercase text-zinc-500'
-                    htmlFor=''
-                  >
-                    Server Name
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isLoading}
-                      className='border-0 bg-zinc-300/50 text-black focus-visible:ring-0 focus-visible:ring-offset-0'
-                      placeholder='Enter a server name'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <DialogFooter className='bg-gray-100 px-6 py-4'>
-            <Button type='submit' variant='primary' disabled={isLoading}>
-              Create
-            </Button>
-          </DialogFooter>
-        </form>
-      </Form>
+        <FormField
+          control={form.control}
+          name='name'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel
+                className='text-xs font-bold uppercase text-zinc-500'
+                htmlFor=''
+              >
+                Server Name
+              </FormLabel>
+              <FormControl>
+                <Input
+                  disabled={isLoading}
+                  className='border-0 bg-zinc-300/50 text-black focus-visible:ring-0 focus-visible:ring-offset-0'
+                  placeholder='Enter a server name'
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      <DialogFooter className='bg-gray-100 px-6 py-4'>
+        <Button type='submit' variant='primary' disabled={false}>
+          Create
+        </Button>
+      </DialogFooter>
+    </form>
+  </Form>
   )
 }
 ```
@@ -957,9 +998,19 @@ Before we can use our component we still need to whitelist uploadthing in our `n
 
 export const config = {
   images: {
-    domains: ['uploadthing.com'],
+    domains: ['uploadthing.com', ],
   },
   matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 };
+```
+
+
+
+## Server Action: Create Server
+
+```ts
+// app/api/servers/route.ts
+
+
 ```
 
