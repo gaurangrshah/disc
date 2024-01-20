@@ -819,3 +819,88 @@ UPLOADTHING_APP_ID=••••••••
 yarn add uploadthing @uploadthing/react
 ```
 
+```ts
+import { createUploadthing, type FileRouter } from 'uploadthing/next';
+import { auth } from '@clerk/nextjs/';
+
+const f = createUploadthing();
+
+const handleAuth = () => {
+  const { userId } = auth();
+  if (!userId) throw new Error('Unauthorized');
+  return { userId };
+};
+
+// FileRouter for your app, can contain multiple FileRoutes
+export const ourFileRouter = {
+  serverImage: f({ image: { maxFileSize: '4MB', maxFileCount: 1 } })
+    .middleware(() => handleAuth())
+    .onUploadComplete(() => {}),
+  messageFile: f(['image', 'pdf'])
+    .middleware(() => handleAuth())
+    .onUploadComplete(() => {}),
+} satisfies FileRouter;
+
+export type OurFileRouter = typeof ourFileRouter;
+```
+
+> See the [default FileRoute](https://docs.uploadthing.com/getting-started/appdir) from the docs for this file, for a better understanding
+
+```ts
+// app/api/uploadthing/route.ts
+
+import { createNextRouteHandler } from "uploadthing/next";
+ 
+import { ourFileRouter } from "./core";
+ 
+// Export routes for Next App Router
+export const { GET, POST } = createNextRouteHandler({
+  router: ourFileRouter,
+});
+```
+
+> File path here doesn't matter, you can serve this from any route. We recommend serving it from `/api/uploadthing`.
+
+
+
+> **NOTE: ** use the snippet below to add default tailwind styles for the upload components.
+>
+> ```ts
+> // tailwind.config.ts
+> 
+> import { withUt } from "uploadthing/tw";
+>  
+> export default withUt({
+>   // Your existing Tailwind config
+>   content: ["./src/**/*.{ts,tsx,mdx}"],
+>   ...
+> });
+> ```
+
+**Expose Uploadthing components**:
+
+```ts
+// lib/uploadthing.ts
+
+import { generateComponents } from '@uploadthing/react';
+
+import type { OurFileRouter } from '@/app/api/uploadthing/core';
+
+
+export const { UploadButton, UploadDropzone, Uploader } =
+  generateComponents<OurFileRouter>();
+
+```
+
+**Extend Auth Middleware**
+
+```ts
+// middleware.ts
+
+export default authMiddleware({
+  publicRoutes: ["/api/uploadthing"]
+});
+```
+
+> allow the api to be publically accessible.
+
