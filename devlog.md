@@ -551,24 +551,82 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
-const prisma = globalThis.prisma || new PrismaClient();
+export const db = globalThis.prisma || new PrismaClient();
 
 // hack: ensures that hot reload doesn't cause a new client to be created on each reload
 if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma;
+```
 
 
-async function main() {
-  // ... you will write your Prisma Client queries here
+
+
+
+## User Profile
+
+```tsx
+// lib/initial-profile.ts
+
+import { currentUser, redirectToSignIn } from "@clerk/nextjs";
+
+import { db } from "@/lib/db";
+
+
+export const initialProfile = async () => {
+  const user = await currentUser();
+  if (!user) {
+    redirectToSignIn();
+  }
+
+  const profile = await db.profile.findUnique({
+    where: { userId: user?.id },
+  });
+
+  if (!profile) {
+    const newProfile = await db.profile.create({
+      data: {
+        userId: `${user?.id}`,
+        name: `${user?.firstName} ${user?.lastName}`,
+        imageUrl: `${user?.imageUrl}`,
+        email: `${user?.emailAddresses[0].emailAddress}`,
+      }
+    });
+
+    return newProfile;
+  } else {
+    return profile;
+  }
 }
+```
 
-main()
-  .then(async () => {
-    await prisma.$disconnect()
+```tsx
+// app/(setup)/page.tsx
+
+import { ModeToggle } from "@/components/mode-toggle";
+import { UserButton } from "@clerk/nextjs";
+import { initialProfile } from "@/lib/initial-profile";
+import { db } from "@/lib/db";
+import { redirect } from "next/navigation";
+
+export default async function SetupPage() {
+  const profile = await initialProfile();
+
+  const server = await db.server.findFirst({
+    where: {
+      members: {
+        some: {
+          id: profile.id,
+        },
+      }
+    },
   })
-  .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+
+  if(server) {
+    return redirect(`/servers/${server.id}`);
+  }
+
+  return (
+    <div>Create a Server</div>
+  );
+}
 ```
 
