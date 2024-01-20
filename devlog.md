@@ -799,8 +799,23 @@ export const InitialModal = () => {
 > **NOTE:**
 >
 > We are seeing hydration issues, because our form is rendered in a modal, and modals are notorious for these issues. By relying on the value of mounted, we are ensuring the component cannot render on the server.
+>
+> We've omitted the dialog component from the render above, just to allow emphasis on the actual logic itself.
 
 
 
-## 
+## Uploads
+
+[docs](https://docs.uploadthing.com/) | [dashboard](https://uploadthing.com/dashboard/boc9m9nw20/api-keys)
+
+Register, then create a  new uploadthing app, and get an API credentials from [uploadthing](https://uploadthing.com/).
+
+```bash
+UPLOADTHING_SECRET=sk_live_•••••••••••••••••••••••••••••••••••••••••••
+UPLOADTHING_APP_ID=••••••••
+```
+
+```bash
+yarn add uploadthing @uploadthing/react
+```
 
