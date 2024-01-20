@@ -1,9 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+
+import { useRouter } from 'next/navigation';
 
 import {
   Dialog,
@@ -13,7 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-
 import {
   Form,
   FormControl,
@@ -22,22 +24,24 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { FileUpload } from '../file-upload';
+import { UserButton } from '@clerk/nextjs';
 
 const formSchema = z.object({
   name: z.string().min(1, {
-    message: 'Name is required',
+    message: 'Server name is required',
   }),
   imageUrl: z.string().min(1, {
-    message: 'Valid image URL is required',
+    message: 'Valid Server image is required',
   }),
 });
 
 export const InitialModal = () => {
   const [mounted, setIsMounted] = useState(false);
+
+  const router = useRouter();
 
   useEffect(() => {
     // prevents hydration mismatch
@@ -55,7 +59,15 @@ export const InitialModal = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    try {
+      await axios.post('/api/servers', values);
+
+      form.reset();
+      router.refresh();
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   if (!mounted) {
@@ -66,6 +78,7 @@ export const InitialModal = () => {
     <Dialog open>
       <DialogContent className='overflow-hidden bg-white p-0 text-black'>
         <DialogHeader className='px-6 pt-8'>
+          <UserButton />
           <DialogTitle className='text-center text-2xl font-bold'>
             Create new server
           </DialogTitle>
@@ -75,13 +88,16 @@ export const InitialModal = () => {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+          <form
+            onSubmit={form.handleSubmit((data) => onSubmit(data))}
+            className='space-y-6'
+          >
             <div className='space-y08 px-6'>
               <div className='flex items-center justify-center text-center'>
                 <FormField
                   control={form.control}
                   name='imageUrl'
-                  render={(field) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormControl>
                         <FileUpload
@@ -120,7 +136,8 @@ export const InitialModal = () => {
               />
             </div>
             <DialogFooter className='bg-gray-100 px-6 py-4'>
-              <Button type='submit' variant='primary' disabled={isLoading}>
+              {JSON.stringify(form.formState.dirtyFields, null, 2)}
+              <Button variant='primary' disabled={isLoading}>
                 Create
               </Button>
             </DialogFooter>

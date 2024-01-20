@@ -20,6 +20,7 @@ export function FileUpload({ endpoint, value, onChange }: FileUploadProps) {
         <Button
           className='absolute right-0 top-0 rounded-full bg-rose-400 p-1 text-white shadow-sm'
           onClick={() => onChange('')}
+          type='button'
         >
           <X className='h-4 w-4' />
         </Button>
@@ -30,7 +31,7 @@ export function FileUpload({ endpoint, value, onChange }: FileUploadProps) {
     <UploadDropzone
       endpoint={endpoint}
       onClientUploadComplete={(res) => onChange(res?.[0].url)}
-      onUploadError={console.log}
+      onUploadError={(error: Error) => console.log(error)}
     />
   );
 }
