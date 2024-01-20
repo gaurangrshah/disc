@@ -15,6 +15,53 @@ Creating a new Next.js app in /Users/gshah/neuro/disc.
 
 
 
+## Prettier
+
+```bash
+yarn add -D prettier eslint-config-prettier prettier-plugin-tailwindcss
+```
+
+```json
+// eslintrc.json
+
+{
+  "extends": ["next/core-web-vitals", "prettier"]
+}
+```
+
+````bash
+touch .prettierrc.json
+````
+
+```json
+// .prettierrc.json
+
+{
+  "trailingComma": "es5",
+  "semi": true,
+  "tabWidth": 2,
+  "singleQuote": true,
+  "jsxSingleQuote": true,
+  "plugins": ["prettier-plugin-tailwindcss"]
+}
+```
+
+```json
+// package.json
+
+"scripts": {
+  ...
+  "format": "prettier --check --ignore-path .gitignore .",
+  "format:fix": "prettier --write --ignore-path .gitignore ."
+}
+```
+
+
+
+
+
+## Shadcn/ui
+
 ```bash
 npx shadcn-ui@latest init
 ```
@@ -372,6 +419,9 @@ npx prisma init
 > # See the documentation for all the connection string options: https://pris.ly/d/connection-strings
 > 
 > DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
+> 
+> # this is what the connection string from pscale looks like:
+> # DATABASE_URL=mysql://••••••••••••••••••••:pscale_pw_•••••••••••••••••••••••••••••••••••••••••••@aws.connect.psdb.cloud/[project-name]]?sslaccept=strict
 > ```
 >
 > **Note:** this connection string needs to be replaced with your own database connection string.
@@ -641,4 +691,116 @@ npx shadcn-ui@latest add input
 > Shadcn/ui uses [react-hook-form](https://react-hook-form.com/) and [zod](zod.dev) for it's form component so these packages are installed when we install the Form component from the package.
 
 
+
+At the top of a new file you can import zod and 
+
+```jsx
+'use client';
+
+
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+
+import { Input } from '../ui/input';
+import { Button } from '../ui/button';
+
+const formSchema = z.object({
+  name: z.string().min(1, {
+    message: 'Name is required',
+  }),
+  imageUrl: z.string().min(1, {
+    message: 'Valid image URL is required',
+  }),
+});
+
+export const InitialModal = () => {
+  
+  const [mounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    // prevents hydration mismatch
+    setIsMounted(true);
+  }, []);
+
+  const form = useForm({ // form setup
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      imageUrl: '',
+    },
+  });
+
+  const isLoading = form.formState.isSubmitting; // 
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log(values);
+  };
+
+  if (!mounted) {
+    // used to prevent hydration mismatch
+    return null;
+  }
+  
+  
+	return (
+     <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+          <div className='space-y08 px-6'>
+            <div className='flex items-center justify-center text-center'>
+              TODO: Add image upload
+            </div>
+
+            <FormField
+              control={form.control}
+              name='name'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel
+                    className='text-xs font-bold uppercase text-zinc-500'
+                    htmlFor=''
+                  >
+                    Server Name
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={isLoading}
+                      className='border-0 bg-zinc-300/50 text-black focus-visible:ring-0 focus-visible:ring-offset-0'
+                      placeholder='Enter a server name'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <DialogFooter className='bg-gray-100 px-6 py-4'>
+            <Button type='submit' variant='primary' disabled={isLoading}>
+              Create
+            </Button>
+          </DialogFooter>
+        </form>
+      </Form>
+  )
+}
+```
+
+> **NOTE:**
+>
+> We are seeing hydration issues, because our form is rendered in a modal, and modals are notorious for these issues. By relying on the value of mounted, we are ensuring the component cannot render on the server.
+
+
+
+## 
 
