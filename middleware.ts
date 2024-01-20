@@ -10,5 +10,8 @@ export default authMiddleware({
 });
 
 export const config = {
+  images: {
+    domains: ['uploadthing.com'],
+  },
   matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 };
