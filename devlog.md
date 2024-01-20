@@ -264,8 +264,6 @@ export default function RootLayout({
 
 > With this in place our site should reflect that we've chosen a dark theme with our custom dark background color
 
-
-
 ```jsx
 // components/mode-toggle.tsx
 
@@ -629,4 +627,18 @@ export default async function SetupPage() {
   );
 }
 ```
+
+
+
+## Forms
+
+```bash
+npx shadcn-ui@latest add form 
+npx shadcn-ui@latest add dialog
+npx shadcn-ui@latest add input  
+```
+
+> Shadcn/ui uses [react-hook-form](https://react-hook-form.com/) and [zod](zod.dev) for it's form component so these packages are installed when we install the Form component from the package.
+
+
 
