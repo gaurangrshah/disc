@@ -1350,3 +1350,17 @@ export function NavigationItem({ id, imageUrl, name }: NavigationItemProps) {
 }
 ```
 
+
+
+
+
+## Add Server Action
+
+**Dependencies**
+
+> ```bash
+> yarn add zustand
+> ```
+
+
+
