@@ -1,10 +1,17 @@
-import type { Metadata } from 'next';
 import { Open_Sans } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
+import { NextSSRPlugin } from '@uploadthing/react/next-ssr-plugin';
+import { extractRouterConfig } from 'uploadthing/server';
+
+import { ourFileRouter } from './api/uploadthing/core';
 import { ThemeProvider } from '@/components/providers/theme-provider';
-import './globals.css';
-import { cn } from '@/lib/utils';
 import { ModalProvider } from '@/components/providers/modal-provider';
+
+import { cn } from '@/lib/utils';
+
+import type { Metadata } from 'next';
+
+import './globals.css';
 
 const font = Open_Sans({ subsets: ['latin'] });
 
@@ -22,6 +29,16 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang='en'>
         <body className={cn(font.className, 'bg-white dark:bg-[#313338]')}>
+          <NextSSRPlugin
+            /**
+             * @SEE: https://docs.uploadthing.com/getting-started/appdir#optional-uploadthing-ssr-plugin
+             * The `extractRouterConfig` will extract **only** the route configs
+             * from the router to prevent additional information from being
+             * leaked to the client. The data passed to the client is the same
+             * as if you were to fetch `/api/uploadthing` directly.
+             */
+            routerConfig={extractRouterConfig(ourFileRouter)}
+          />
           <ThemeProvider
             attribute='class'
             defaultTheme='dark'
