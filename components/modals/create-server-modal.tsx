@@ -76,7 +76,6 @@ export const CreateServerModal = () => {
     <Dialog open={isModalOpen} onOpenChange={handleClose}>
       <DialogContent className='overflow-hidden bg-white p-0 text-black'>
         <DialogHeader className='px-6 pt-8'>
-          <UserButton />
           <DialogTitle className='text-center text-2xl font-bold'>
             Create new server
           </DialogTitle>
