@@ -1364,3 +1364,275 @@ export function NavigationItem({ id, imageUrl, name }: NavigationItemProps) {
 
 
 
+Create a modal store hook that can be extended in the future for use with all of the modals in the project. 
+
+```ts
+// hooks/use-modal-store.ts
+
+import { create } from 'zustand';
+
+export type ModalType = 'createServer';
+
+interface ModalStore {
+  type: ModalType | null;
+  isOpen: boolean;
+  onOpen: (type: ModalType) => void;
+  onClose: () => void;
+}
+
+export const useModal = create<ModalStore>((set) => ({
+  type: 'createServer',
+  isOpen: false,
+  onOpen: (type) => set({ type: type, isOpen: true }),
+  onClose: () => set({ type: null, isOpen: false }),
+}));
+```
+
+
+
+Next we'll need to create a provider that we can use to consume this store and expose its api for it's children.
+
+```tsx
+// components/providers/modal-provider.tsx
+
+'use-client';
+
+import { useEffect, useState } from 'react';
+
+import { CreateServerModal } from '@/components/modals/create-server-modal';
+
+export function ModalProvider() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return null;
+  }
+
+  return (
+    <>
+      <CreateServerModal />
+    </>
+  );
+}
+
+```
+
+
+
+Now we'll need to wrap the root layout with the provider, so that it can be accessed by all children of the provider.
+
+```tsx
+// app/layout.tsx
+
+import { ModalProvider } from '@/components/providers/modal-provider';
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    // ...
+    
+    <ThemeProvider
+      attribute='class'
+      defaultTheme='dark'
+      enableSystem={false}
+      storageKey='disc-theme'
+      // disableTransitionOnChange
+    >
+      <ModalProvider />
+      {children}
+    </ThemeProvider>
+    
+    // ...
+  )
+}
+```
+
+
+
+Next we'll need a UI for Creating a new server, which will have very similar logic to our `InitialModal` component.
+
+````tsx
+// components/modals/create-server-modal.tsx
+
+'use client';
+
+import axios from 'axios';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+
+import { useRouter } from 'next/navigation';
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '../ui/input';
+import { Button } from '../ui/button';
+import { FileUpload } from '../file-upload';
+import { UserButton } from '@clerk/nextjs';
+
+const formSchema = z.object({
+  name: z.string().min(1, {
+    message: 'Server name is required',
+  }),
+  imageUrl: z.string().min(1, {
+    message: 'Valid Server image is required',
+  }),
+});
+
+export const CreateServerModal = () => {
+  const router = useRouter();
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      imageUrl: '',
+    },
+  });
+
+  const isLoading = form.formState.isSubmitting;
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      await axios.post('/api/servers', values);
+
+      form.reset();
+      router.refresh();
+      onClose();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <Dialog>
+      <DialogContent className='overflow-hidden bg-white p-0 text-black'>
+        <DialogHeader className='px-6 pt-8'>
+          <UserButton />
+          <DialogTitle className='text-center text-2xl font-bold'>
+            Create new server
+          </DialogTitle>
+          <DialogDescription className='text-center text-zinc-500'>
+            Give your server a personality with a name and image. This can be
+            updated later.
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit((data) => onSubmit(data))}
+            className='space-y-6'
+          >
+            <div className='space-y08 px-6'>
+              <div className='flex items-center justify-center text-center'>
+                <FormField
+                  control={form.control}
+                  name='imageUrl'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <FileUpload
+                          endpoint='serverImage'
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                ></FormField>
+              </div>
+
+              <FormField
+                control={form.control}
+                name='name'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel
+                      className='text-xs font-bold uppercase text-zinc-500'
+                      htmlFor=''
+                    >
+                      Server Name
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        disabled={isLoading}
+                        className='border-0 bg-zinc-300/50 text-black focus-visible:ring-0 focus-visible:ring-offset-0'
+                        placeholder='Enter a server name'
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <DialogFooter className='bg-gray-100 px-6 py-4'>
+              {JSON.stringify(form.formState.dirtyFields, null, 2)}
+              <Button variant='primary' disabled={isLoading}>
+                Create
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+````
+
+
+
+Now we can mount the modal from our existing `NavigationAction` component
+
+```tsx
+// components/navigation/navigation-action.tsx
+
+'use-client';
+
+import { Plus } from 'lucide-react';
+
+import { ActionTooltip } from '../action-tooltip';
+import { useModal } from '@/hooks/use-modal-store';
+
+export function NavigationAction() {
+  const { onOpen } = useModal(); // exposed modal store
+  return (
+    <div className=''>
+      <ActionTooltip side='right' align='center' label='Add a server'>
+        <button
+          className='group flex items-center'
+          onClick={() => onOpen('createServer')} // triggers modal
+        >
+          <div className='mx-3 flex h-[48px] w-[48px] items-center justify-center overflow-hidden rounded-[24px] bg-background transition-all group-hover:rounded-[16px] group-hover:bg-emerald-500 dark:bg-neutral-700'>
+            <Plus
+              className='text-emerald-500 transition group-hover:text-white'
+              size={25}
+            />
+          </div>
+        </button>
+      </ActionTooltip>
+    </div>
+  );
+}
+```
+
