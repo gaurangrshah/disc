@@ -1011,6 +1011,342 @@ export const config = {
 ```ts
 // app/api/servers/route.ts
 
+import { v4 as uuidv4 } from 'uuid';
 
+import { NextResponse } from 'next/server';
+
+import { currentProfile } from '@/lib/current-profile';
+import { db } from '@/lib/db';
+
+import { MemberRole, type Profile } from '@prisma/client';
+
+export async function POST(req: Request) {
+  try {
+    const { name, imageUrl } = await req.json();
+
+    const profile = (await currentProfile()) as Profile | null;
+    if (!profile) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+
+    const server = await db.server.create({
+      data: {
+        profileId: profile.id,
+        name,
+        imageUrl,
+        inviteCode: uuidv4(),
+        channels: {
+          create: [{ name: 'general', profileId: profile.id }],
+        },
+        members: {
+          create: [{ profileId: profile.id, role: MemberRole.ADMIN }],
+        },
+      },
+    });
+
+    return NextResponse.json(server);
+  } catch (error) {
+    console.log('[SERVERS_POST]', error);
+    return new NextResponse('Internal Error', { status: 500 });
+  }
+}
+```
+
+> here we've handled all of the server/db logic that is needed to create a server including populating and connecting all related tables as well as handling authoization via authentication using our custom `currentProfile()` helper.
+
+```ts
+// components/modals/initial-modal.tsx
+
+import axios from 'axios';
+
+export const InitialModal = () => {
+  //...
+  
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      await axios.post('/api/servers', values);
+
+      form.reset();
+      router.refresh();
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
+  //...
+}
+```
+
+> here we've simply updated the onSubmit handler for our initial-modal form allowing us to communicate with our backend.
+
+
+
+```tsx
+// app/(setup)/page.tsx
+
+export default async function SetupPage() {
+  const profile = await initialProfile();
+
+  const server = await db.server.findFirst({
+    where: {
+      members: {
+        some: {
+          id: profile.id,
+        },
+      },
+    },
+  });
+
+  if (server) {
+    // this is where we're redirecting users.
+    return redirect(`/servers/${server.id}`);
+  }
+
+  return <InitialModal />;
+}
+```
+
+> Currently when a user successfully creates a server, we're supposed to be routing them directly to that newly created server using that server's id. We will have to introduce some logic and UI to accomodate this behavior.
+
+
+
+## Server Layout
+
+First we'll need a page to render when a specific server is being accessed.
+
+```tsx
+// app/(main)/(routes)/servers/[serverId]/page.tsx
+
+export default function ServerPage() {
+  return (
+  	<div>Server ID page  </div>
+  )
+}
+```
+
+
+
+Add a custom layout for this route.
+
+```jsx
+// app/(main)/(routes)/layout.tsx
+
+import { NavigationSidebar } from "@/components/navigation/navigation-sidebar"
+
+export default async function MainLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className='h-full'>
+      <div className='fixed inset-y-0 z-30 hidden h-full w-[72px] flex-col md:flex'>
+        <NavigationSidebar/>
+      </div>
+      <main className='h-full md:pl-[72px]'>{children}</main>
+    </div>
+  );
+}
+
+```
+
+
+
+## Server Component: Sidebar
+
+Next let's add the Sidebar component (which will be a server component) we're attempting to render above:
+
+```tsx
+// components/navigation/navigation-sidebar.tsx
+
+import { db } from '@/lib/db';
+import { redirect } from 'next/navigation';
+
+import { currentProfile } from '@/lib/current-profile';
+
+import { NavigationAction } from './navigation-action';
+import { NavigationItem } from './navigation-item';
+import { Separator } from '../ui/separator';
+import { ScrollArea } from '../ui/scroll-area';
+import { ModeToggle } from '../mode-toggle';
+import { UserButton } from '@clerk/nextjs';
+
+export async function NavigationSidebar() {
+  const profile = await currentProfile();
+  if (!profile) return redirect('/');
+
+  const servers = await db.server.findMany({
+    where: {
+      members: {
+        some: {
+          profileId: profile.id,
+        },
+      },
+    },
+  });
+
+  return (
+    <div className='py-e flex h-full w-full flex-col items-center space-y-4 text-primary dark:bg-[#1E1F22]'>
+      <NavigationAction />
+      <Separator className='mx-auto h-[2px] w-10 rounded-md bg-zinc-300 dark:bg-zinc-700' />
+      <ScrollArea className='w-full flex-1'>
+        {servers.map((server) => (
+          <div key={server.id} className='mb-4'>
+            <NavigationItem
+              id={server.id}
+              name={server.name}
+              imageUrl={server.imageUrl}
+            />
+          </div>
+        ))}
+      </ScrollArea>
+      <div className='mt-auto flex flex-col items-center gap-y-4 pb-3'>
+        <ModeToggle />
+        <UserButton
+          afterSignOutUrl='/'
+          appearance={{ elements: { avatarbox: 'h-[48px] w-[48px]' } }}
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+> the `async` keyword in the component definition makes this explictly a server component. This means we can safely do any data-fetching or authenicating in this file.
+>
+> In the above code, we've added `NavigationAction` and `NavigationItem` components which we'll need to define next.
+
+
+
+**Dependencies Added**
+
+> - [x] `npx shadcn-ui@latest add tooltip`
+> - [x] `npx shadcn-ui@latest add separator`
+> - [x] `npx shadcn-ui@latest add scroll-area`
+
+
+
+## Client Component: Tooltip
+
+```tsx
+// components/navigation/navigation-action.tsx
+
+'use-client';
+
+import { Plus } from 'lucide-react';
+
+import { ActionTooltip } from '../action-tooltip';
+
+export function NavigationAction() {
+  return (
+    <div className=''>
+      <ActionTooltip side='right' align='center' label='Add a server'>
+        <button className='group flex items-center'>
+          <div className='mx-3 flex h-[48px] w-[48px] items-center justify-center overflow-hidden rounded-[24px] bg-background transition-all group-hover:rounded-[16px] group-hover:bg-emerald-500 dark:bg-neutral-700'>
+            <Plus
+              className='text-emerald-500 transition group-hover:text-white'
+              size={25}
+            />
+          </div>
+        </button>
+      </ActionTooltip>
+    </div>
+  );
+}
+```
+
+
+
+```tsx
+// components/ui/action-tooltip.tsx
+
+'use-client';
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../ui/tooltip';
+
+interface ActionTooltipProps {
+  label: string;
+  children: React.ReactNode;
+  side?: 'top' | 'right' | 'bottom' | 'left';
+  align?: 'start' | 'center' | 'end';
+}
+
+export function ActionTooltip({
+  label,
+  children,
+  side,
+  align,
+}: ActionTooltipProps) {
+  return (
+    <TooltipProvider>
+      <Tooltip delayDuration={50}>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent side={side} align={align}>
+          <p className='text-sm font-semibold capitalize'>
+            {label.toLowerCase()}
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+```
+
+
+
+```tsx
+// components/navigation/navigation-item.tsx
+
+'use client';
+
+import Image from 'next/image';
+import { useParams, useRouter } from 'next/navigation';
+
+import { cn } from '@/lib/utils';
+import { ActionTooltip } from '../ui/action-tooltip';
+
+interface NavigationItemProps {
+  id: string;
+  imageUrl: string;
+  name: string;
+}
+
+export function NavigationItem({ id, imageUrl, name }: NavigationItemProps) {
+  const params = useParams();
+  const router = useRouter();
+
+  const onClick = () => {
+    router.push(`/servers/${id}`);
+  };
+
+  return (
+    <ActionTooltip side='right' align='center' label={name}>
+      <button onClick={onClick} className='group relative flex items-center'>
+        <div
+          className={cn(
+            'transition=all absolute left-0 w-[4px] rounded-r-full bg-primary',
+            params?.serverId !== id && 'group-hover:h-[20px]',
+            params?.serverId === id ? 'h-[36px]' : 'h-[8px]'
+          )}
+        />
+        <div
+          className={cn(
+            'group relative mx-3 flex h-[48px] w-[48px] overflow-hidden rounded-[24px] transition-all group-hover:rounded-[16px]',
+            params?.serverId === id &&
+              'rounded-[16px] bg-primary/10 text-primary'
+          )}
+        >
+          <Image fill src={imageUrl} alt='Channel' />
+        </div>
+      </button>
+    </ActionTooltip>
+  );
+}
 ```
 
