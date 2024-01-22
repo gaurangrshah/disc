@@ -1227,7 +1227,7 @@ export async function NavigationSidebar() {
 
 
 
-## Client Component: Tooltip
+## [Client Component: Tooltip](https://github.com/gaurangrshah/disc/commit/e588c660f3cb08d77261988a71d93d946fa370d4)
 
 ```tsx
 // components/navigation/navigation-action.tsx
@@ -1354,7 +1354,7 @@ export function NavigationItem({ id, imageUrl, name }: NavigationItemProps) {
 
 
 
-## Add Server Action
+## [Client Form Handling](https://github.com/gaurangrshah/disc/commit/ef124ed9741dfdd9af8f761e68ae008058f1de0e)
 
 **Dependencies**
 
@@ -1635,4 +1635,86 @@ export function NavigationAction() {
   );
 }
 ```
+
+
+
+
+
+## [Role-Based access](https://github.com/gaurangrshah/disc/commit/fb6839661adcb025c0a3848a5f93a9bb57d587f2)
+
+```tsx
+// components/server/server-sidebar.tsx
+
+import { redirect } from 'next/navigation';
+import { ChannelType } from '@prisma/client';
+
+import { currentProfile } from '@/lib/current-profile';
+import { db } from '@/lib/db';
+
+import { ServerHeader } from './server-header';
+
+interface ServerSidebarProps {
+  serverId: string;
+}
+
+export async function ServerSidebar({ serverId }: ServerSidebarProps) {
+  const profile = await currentProfile();
+
+  if (!profile) {
+    return redirect('/');
+  }
+
+  const server = await db.server.findUnique({
+    where: {
+      id: serverId,
+    },
+    include: {
+      channels: {
+        orderBy: {
+          createdAt: 'asc',
+        },
+      },
+      members: {
+        include: {
+          profile: true,
+        },
+        orderBy: {
+          role: 'asc',
+        },
+      },
+    },
+  });
+
+  const textChannels = server?.channels.filter(
+    (channel) => channel.type === ChannelType.TEXT
+  );
+  const audioChannels = server?.channels.filter(
+    (channel) => channel.type === ChannelType.AUDIO
+  );
+  const videoChannels = server?.channels.filter(
+    (channel) => channel.type === ChannelType.VIDEO
+  );
+
+  // remove current user from members list to avoid showing their profile image twice
+  const members = server?.members.filter(
+    (member) => member.profileId !== profile.id
+  );
+
+  if (!server) {
+    return redirect('/');
+  }
+
+  const role = server.members.find(
+    (member) => member.profileId === profile.id
+  )?.role;
+
+  return (
+    <div className='flex h-full w-full flex-col bg-[#F2F3F5] text-primary dark:bg-[#2B2D31]'>
+      <ServerHeader server={server} role={role} />
+    </div>
+  );
+}
+```
+
+> Here we're creating client-side logic gates to ensure our **admins, moderators and guests** each see only the functionality that is available to them.
 
