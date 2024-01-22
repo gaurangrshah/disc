@@ -4,7 +4,6 @@ import axios from 'axios';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { UserButton } from '@clerk/nextjs';
 
 import { useRouter } from 'next/navigation';
 
