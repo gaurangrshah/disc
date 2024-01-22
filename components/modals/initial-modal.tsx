@@ -94,7 +94,7 @@ export const InitialModal = () => {
             onSubmit={form.handleSubmit((data) => onSubmit(data))}
             className='space-y-6'
           >
-            <div className='space-y08 px-6'>
+            <div className='space-y-8 px-6'>
               <div className='flex items-center justify-center text-center'>
                 <FormField
                   control={form.control}
