@@ -5,7 +5,7 @@ import axios from 'axios';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-
+import { UserButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -27,7 +27,6 @@ import {
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { FileUpload } from '../file-upload';
-import { UserButton } from '@clerk/nextjs';
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -60,11 +59,14 @@ export const InitialModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.post('/api/servers', values);
+      const server = await axios.post('/api/servers', values);
 
       form.reset();
       router.refresh();
-      window.location.reload();
+
+      if (server) {
+        router.push(`/servers/${server.data.id}`);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -108,7 +110,7 @@ export const InitialModal = () => {
                       </FormControl>
                     </FormItem>
                   )}
-                ></FormField>
+                />
               </div>
 
               <FormField
