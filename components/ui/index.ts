@@ -6,5 +6,6 @@ export * from './form';
 export * from './input';
 export * from './label';
 export * from './scroll-area';
+export * from './select';
 export * from './separator';
 export * from './tooltip';
