@@ -18,7 +18,7 @@ export function FileUpload({ endpoint, value, onChange }: FileUploadProps) {
       <div className='relative h-20 w-20'>
         <Image fill src={value} alt='Upload' className='rounded-full' />
         <Button
-          className='absolute right-0 top-0 rounded-full bg-rose-400 p-1 text-white shadow-sm'
+          className='absolute right-0 top-0 -translate-y-5 -scale-[.5] rounded-full bg-rose-400 p-2.5 text-white shadow-sm'
           onClick={() => onChange('')}
           type='button'
         >
