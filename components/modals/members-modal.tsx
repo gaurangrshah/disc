@@ -18,11 +18,11 @@ import { Label } from '../ui/label';
 import { modalTypes, useModal } from '@/hooks/use-modal-store';
 import { useOrigin } from '@/hooks/use-origin';
 
-export const InviteModal = () => {
+export const MembersModal = () => {
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { onOpen, isOpen, onClose, type, data } = useModal();
-  const isModalOpen = isOpen && type === modalTypes.invite; // derive modal state from store
+  const isModalOpen = isOpen && type === modalTypes.members; // derive modal state from store
 
   const { server } = data;
   const origin = useOrigin();

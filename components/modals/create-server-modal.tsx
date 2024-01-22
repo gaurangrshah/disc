@@ -27,7 +27,7 @@ import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { FileUpload } from '../file-upload';
 
-import { useModal } from '@/hooks/use-modal-store';
+import { modalTypes, useModal } from '@/hooks/use-modal-store';
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -40,7 +40,7 @@ const formSchema = z.object({
 
 export const CreateServerModal = () => {
   const { isOpen, onClose, type } = useModal();
-  const isModalOpen = isOpen && type === 'createServer'; // derive modal state from store
+  const isModalOpen = isOpen && type === modalTypes.createServer; // derive modal state from store
 
   const router = useRouter();
 
