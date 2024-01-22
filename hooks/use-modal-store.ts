@@ -8,7 +8,8 @@ export type ModalType =
   | 'invite'
   | 'editServer'
   | 'members'
-  | 'createChannel';
+  | 'createChannel'
+  | 'leaveServer';
 
 export const modalTypes = {
   createServer: 'createServer',
@@ -16,6 +17,7 @@ export const modalTypes = {
   editServer: 'editServer',
   members: 'members',
   createChannel: 'createChannel',
+  leaveServer: 'leaveServer',
 };
 
 interface ModalData {

@@ -8,6 +8,7 @@ import {
   EditServerModal,
   MembersModal,
   CreateChannelModal,
+  LeaveServerModal,
 } from '../modals/';
 
 export function ModalProvider() {
@@ -28,6 +29,7 @@ export function ModalProvider() {
       <EditServerModal />
       <MembersModal />
       <CreateChannelModal />
+      <LeaveServerModal />
     </>
   );
 }
