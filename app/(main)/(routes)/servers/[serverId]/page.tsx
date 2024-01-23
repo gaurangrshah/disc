@@ -1,3 +1,43 @@
-export default function ServerPage() {
-  return <div>Server ID page </div>;
+import { currentProfile } from '@/lib/current-profile';
+import { db } from '@/lib/db';
+import { redirectToSignIn } from '@clerk/nextjs';
+import { redirect } from 'next/navigation';
+
+interface ServerPageProps {
+  params: {
+    serverId: string;
+  };
+}
+
+export default async function ServerPage({ params }: ServerPageProps) {
+  const profile = await currentProfile();
+  if (!profile) {
+    return redirectToSignIn();
+  }
+
+  const server = await db.server.findUnique({
+    where: {
+      id: params.serverId,
+      members: {
+        some: {
+          // ensure user is a member of the server
+          profileId: profile.id,
+        },
+      },
+    },
+    include: {
+      channels: {
+        where: {
+          name: 'general',
+        },
+      },
+    },
+  });
+
+  const initialChannel = server?.channels[0];
+  if (initialChannel?.name !== 'general') {
+    return null;
+  }
+
+  return redirect(`/servers/${params.serverId}/channels/${initialChannel?.id}`);
 }
