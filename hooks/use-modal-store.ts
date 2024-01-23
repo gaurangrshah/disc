@@ -5,22 +5,24 @@ import { create } from 'zustand';
 
 export type ModalType =
   | 'createServer'
-  | 'invite'
   | 'editServer'
+  | 'leaveServer'
+  | 'deleteServer'
+  | 'invite'
   | 'members'
   | 'createChannel'
   | 'deleteChannel'
-  | 'leaveServer'
-  | 'deleteServer';
+  | 'editChannel';
 
 export const modalTypes = {
   createServer: 'createServer',
-  invite: 'invite',
   editServer: 'editServer',
+  deleteServer: 'deleteServer',
+  invite: 'invite',
   members: 'members',
   createChannel: 'createChannel',
-  deleteServer: 'deleteServer',
   deleteChannel: 'deleteChannel',
+  editChannel: 'editChannel',
 };
 
 interface ModalData {
