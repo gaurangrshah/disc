@@ -1,12 +1,12 @@
 'use client';
 
+import { useEffect } from 'react';
 import axios from 'axios';
 import qs from 'query-string';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { ChannelType } from '@prisma/client';
-
 import { useParams, useRouter } from 'next/navigation';
 
 import {
@@ -24,7 +24,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-
 import {
   Select,
   SelectContent,
@@ -32,7 +31,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 
@@ -51,9 +49,9 @@ const formSchema = z.object({
 });
 
 export const CreateChannelModal = () => {
-  const { isOpen, onClose, type } = useModal();
+  const { isOpen, onClose, type, data } = useModal();
   const isModalOpen = isOpen && type === modalTypes.createChannel; // derive modal state from store
-
+  const { channelType } = data;
   const router = useRouter();
   const params = useParams();
 
@@ -61,9 +59,17 @@ export const CreateChannelModal = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      type: ChannelType.TEXT,
+      type: channelType || ChannelType.TEXT,
     },
   });
+
+  useEffect(() => {
+    if (channelType) {
+      form.setValue('type', channelType);
+    } else {
+      form.setValue('type', ChannelType.TEXT);
+    }
+  }, [form, channelType]);
 
   const isLoading = form.formState.isSubmitting;
 
