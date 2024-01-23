@@ -11,7 +11,7 @@ import { useParams, useRouter } from 'next/navigation';
 
 import { ActionTooltip } from '../action-tooltip';
 
-import { useModal } from '@/hooks/use-modal-store';
+import { type ModalType, useModal } from '@/hooks/use-modal-store';
 
 import { cn } from '@/lib/utils';
 
@@ -35,9 +35,18 @@ export function ServerChannel({ channel, server, role }: ServerChannelProps) {
 
   const Icon = iconMap[channel.type] || Hash;
 
+  const handleClick = () => {
+    router.push(`/servers/${params?.serverId}/channels/${channel.id}`);
+  };
+
+  const onAction = (e: React.MouseEvent, action: ModalType) => {
+    e.stopPropagation();
+    onOpen(action, { server, channel });
+  };
+
   return (
     <button
-      onClick={() => {}}
+      onClick={handleClick}
       className={cn(
         'group mb-1 flex w-full items-center gap-x-2 rounded-md px-2 py-2 transition hover:bg-zinc-700/10 dark:hover:bg-zinc-700/50',
         params?.channelId === channel.id && 'bg-zinc-700/20 dark:bg-zinc-700'
@@ -58,13 +67,13 @@ export function ServerChannel({ channel, server, role }: ServerChannelProps) {
           <ActionTooltip label='Edit'>
             <Edit
               className='hidden h-4 w-4 text-zinc-500 transition hover:text-zinc-600 group-hover:block dark:text-zinc-400 dark:hover:text-zinc-300'
-              onClick={() => onOpen('editChannel', { server, channel })}
+              onClick={(e) => onAction(e, 'editChannel')}
             />
           </ActionTooltip>
           <ActionTooltip label='Delete'>
             <Trash
               className='hidden h-4 w-4 text-zinc-500 transition hover:text-zinc-600 group-hover:block dark:text-zinc-400 dark:hover:text-zinc-300'
-              onClick={() => onOpen('deleteChannel', { server, channel })}
+              onClick={(e) => onAction(e, 'deleteChannel')}
             />
           </ActionTooltip>
         </div>
