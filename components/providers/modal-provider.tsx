@@ -10,6 +10,7 @@ import {
   CreateChannelModal,
   LeaveServerModal,
   DeleteServerModal,
+  DeleteChannelModal,
 } from '../modals/';
 
 export function ModalProvider() {
@@ -32,6 +33,7 @@ export function ModalProvider() {
       <CreateChannelModal />
       <LeaveServerModal />
       <DeleteServerModal />
+      <DeleteChannelModal />
     </>
   );
 }
