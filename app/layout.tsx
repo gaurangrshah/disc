@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import type { Metadata } from 'next';
 
 import './globals.css';
+import { SocketProvider } from '@/components/providers/socket-provider';
 
 const font = Open_Sans({ subsets: ['latin'] });
 
@@ -46,8 +47,10 @@ export default function RootLayout({
             storageKey='disc-theme'
             // disableTransitionOnChange
           >
-            <ModalProvider />
-            {children}
+            <SocketProvider>
+              <ModalProvider />
+              {children}
+            </SocketProvider>
           </ThemeProvider>
         </body>
       </html>
