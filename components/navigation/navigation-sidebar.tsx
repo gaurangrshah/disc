@@ -25,7 +25,7 @@ export async function NavigationSidebar() {
   });
 
   return (
-    <div className='py-e flex h-full w-full flex-col items-center space-y-4 text-primary dark:bg-[#1E1F22]'>
+    <div className='py-e flex h-full w-full flex-col items-center space-y-4 bg-[#E3E5E8] text-primary dark:bg-[#1E1F22]'>
       <NavigationAction />
       <Separator className='mx-auto h-[2px] w-10 rounded-md bg-zinc-300 dark:bg-zinc-700' />
       <ScrollArea className='w-full flex-1'>
