@@ -15,10 +15,7 @@ export default function ioHandler(
   req: NextApiRequest,
   res: NextApiResponseServerIO
 ) {
-  console.log('pages api route HIT');
   if (!res.socket.server.io) {
-    console.log('*First use, starting socket.io');
-
     const path = '/api/socket/io';
     const httpServer: NetServer = res.socket.server as any;
 
