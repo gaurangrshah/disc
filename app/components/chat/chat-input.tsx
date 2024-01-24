@@ -22,16 +22,18 @@ const formSchema = z.object({
   content: z.string().min(1),
 });
 
-export function ChatInput({ apiUrl, query, name, type }: ChatInputProps) {
+export const ChatInput = ({ apiUrl, query, name, type }: ChatInputProps) => {
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       content: '',
     },
   });
-  const router = useRouter();
 
   const isLoading = form.formState.isSubmitting;
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const url = qs.stringifyUrl({
@@ -51,34 +53,35 @@ export function ChatInput({ apiUrl, query, name, type }: ChatInputProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <FormField
-          name='content'
-          control={form.control}
-          render={({ field }) => (
-            <FormItem>
-              <div className='relative p-4 pb-6'>
-                <button
-                  type='button'
-                  onClick={() => {}}
-                  className='dark:hover:bg-zing-300 absolute left-8 top-7 flex h-[24px] w-[24px] items-center justify-center rounded-full bg-zinc-500 p-1 transition hover:bg-zinc-600 dark:bg-zinc-400'
-                >
-                  <Plus className='text-white dark:text-[#313338]' />
-                </button>
-
-                <Input
-                  {...field}
-                  disabled={isLoading}
-                  placeholder={`Message ${type === 'conversation' ? name : '# ' + name}`}
-                  className='bg-zin-200/90 border-0 border-none px-14 py-6 text-zinc-600 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-zinc-700/75 dark:text-zinc-200'
-                />
-                <div className='absolute right-8 top-7'>
-                  <Smile className='' />
+        <FormControl>
+          <FormField
+            name='content'
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <div className='relative p-4 pb-6'>
+                  <button
+                    type='button'
+                    onClick={() => {}}
+                    className='dark:hover:bg-zing-300 absolute left-8 top-7 flex h-[24px] w-[24px] items-center justify-center rounded-full bg-zinc-500 p-1 transition hover:bg-zinc-600 dark:bg-zinc-400'
+                  >
+                    <Plus className='text-white dark:text-[#313338]' />
+                  </button>
+                  <Input
+                    {...field}
+                    disabled={isLoading}
+                    placeholder={`Message ${type === 'conversation' ? name : '# ' + name}`}
+                    className='bg-zin-200/90 border-0 border-none px-14 py-6 text-zinc-600 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-zinc-700/75 dark:text-zinc-200'
+                  />
+                  <div className='absolute right-8 top-7'>
+                    <Smile className='' />
+                  </div>
                 </div>
-              </div>
-            </FormItem>
-          )}
-        />
+              </FormItem>
+            )}
+          />
+        </FormControl>
       </form>
     </Form>
   );
-}
+};
