@@ -11,3 +11,4 @@ export * from './sheet';
 export * from './select';
 export * from './separator';
 export * from './tooltip';
+export * from './popover';
