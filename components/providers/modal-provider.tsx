@@ -12,6 +12,7 @@ import {
   CreateChannelModal,
   EditChannelModal,
   DeleteChannelModal,
+  MessageFileModal,
 } from '../modals/';
 
 export function ModalProvider() {
@@ -36,6 +37,7 @@ export function ModalProvider() {
       <CreateChannelModal />
       <EditChannelModal />
       <DeleteChannelModal />
+      <MessageFileModal />
     </>
   );
 }
