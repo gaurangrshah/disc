@@ -49,7 +49,20 @@ export default async function ChannelIdPage({ params }: ChannelIdPageProps) {
         name={channel.name}
         type='channel'
       />
-      <ChatMessages />
+      <ChatMessages
+        name={channel.name}
+        member={member}
+        chatId={channel.id}
+        apiUrl='/api/messages'
+        socketUrl='/api/socket/messages'
+        socketQuery={{
+          serverId: channel.serverId,
+          channelId: channel.id,
+        }}
+        paramKey='channelId'
+        paramValue={channel.id}
+        type='channel'
+      />
       <ChatInput
         name={channel.name}
         type='channel'
