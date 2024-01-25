@@ -80,12 +80,21 @@ Success! Project initialization completed. You may now add components.
 
 
 
-CSS Percentage based Height Fix:
+CSS Percentage based Height (for flexbox) & box-sizing fix:
 
 ```css
-/* global.css */
-html, body, :root {
-  height: 100%
+/* Flexbox height fix */
+html,
+body,
+:root {
+  height: 100%;
+}
+
+/* Prefer box-sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 ```
 
