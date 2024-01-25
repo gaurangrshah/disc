@@ -19,13 +19,15 @@ import {
   User,
 } from 'lucide-react';
 
-import { UserAvatar } from '../user-avatar';
-import { ActionTooltip } from '../action-tooltip';
+import { Form, FormControl, FormField, FormItem } from '../ui';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { UserAvatar } from '../user-avatar';
+import { ActionTooltip } from '../action-tooltip';
 
 import { cn } from '@/lib/utils';
-import { Form, FormControl, FormField, FormItem } from '../ui';
+
+import { useModal } from '@/hooks/use-modal-store';
 
 interface ChatItemProps {
   id: string;
@@ -63,7 +65,7 @@ export function ChatItem({
   socketQuery,
 }: ChatItemProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const { onOpen } = useModal();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -232,7 +234,15 @@ export function ChatItem({
             </ActionTooltip>
           )}
           <ActionTooltip label='Delete'>
-            <Trash className='ml-auto h-4 w-4 cursor-pointer text-zinc-500 transition hover:text-zinc-600 dark:hover:text-zinc-300' />
+            <Trash
+              onClick={() =>
+                onOpen('deleteMessage', {
+                  apiUrl: `${socketUrl}/${id}`,
+                  query: socketQuery,
+                })
+              }
+              className='ml-auto h-4 w-4 cursor-pointer text-zinc-500 transition hover:text-zinc-600 dark:hover:text-zinc-300'
+            />
           </ActionTooltip>
         </div>
       )}

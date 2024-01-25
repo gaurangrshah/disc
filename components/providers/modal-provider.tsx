@@ -13,6 +13,7 @@ import {
   EditChannelModal,
   DeleteChannelModal,
   MessageFileModal,
+  DeleteMessageModal,
 } from '../modals/';
 
 export function ModalProvider() {
@@ -38,6 +39,7 @@ export function ModalProvider() {
       <EditChannelModal />
       <DeleteChannelModal />
       <MessageFileModal />
+      <DeleteMessageModal />
     </>
   );
 }

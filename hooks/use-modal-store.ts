@@ -13,7 +13,8 @@ export type ModalType =
   | 'createChannel'
   | 'deleteChannel'
   | 'editChannel'
-  | 'messageFile';
+  | 'messageFile'
+  | 'deleteMessage';
 
 export const modalTypes = {
   createServer: 'createServer',
@@ -25,6 +26,7 @@ export const modalTypes = {
   deleteChannel: 'deleteChannel',
   editChannel: 'editChannel',
   messageFile: 'messageFile',
+  deleteMessage: 'deleteMessage',
 };
 
 interface ModalData {
