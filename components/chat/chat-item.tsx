@@ -4,6 +4,7 @@ import { MemberRole, type Member, type Profile } from '@prisma/client';
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useRouter, useParams } from 'next/navigation';
 import { z } from 'zod';
 import axios from 'axios';
 import qs from 'query-string';
@@ -72,6 +73,14 @@ export function ChatItem({
     defaultValues: { content },
   });
 
+  const params = useParams();
+  const router = useRouter();
+
+  const onMemberClick = () => {
+    if (member.id === currentMember.id) return;
+    router.push(`/servers/${params?.serverId}/conversations/${member.id}`);
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: any) => {
       if (e.key === 'Escape' || e.keyCode === 27 || e.key === 'Esc') {
@@ -122,7 +131,7 @@ export function ChatItem({
     <div className='group relative flex w-full items-center p-4 transition hover:bg-black/5'>
       <div className='group flex w-full items-start gap-x-2'>
         <div
-          // onClick={onMemberClick}
+          onClick={onMemberClick}
           className='cursor-pointer transition hover:drop-shadow-md'
         >
           <UserAvatar src={member.profile.imageUrl} />
@@ -131,7 +140,7 @@ export function ChatItem({
           <div className='flex items-center gap-x-2'>
             <div className='flex items-center'>
               <p
-                // onClick={onMemberClick}
+                onClick={onMemberClick}
                 className='cursor-pointer text-sm font-semibold hover:underline'
               >
                 {member.profile.name}
