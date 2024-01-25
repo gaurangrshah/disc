@@ -30,6 +30,9 @@ export default async function ServerPage({ params }: ServerPageProps) {
         where: {
           name: 'general',
         },
+        orderBy: {
+          createdAt: 'asc',
+        },
       },
     },
   });
