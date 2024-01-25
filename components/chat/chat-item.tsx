@@ -115,6 +115,7 @@ export function ChatItem({
     // used to update the message content when the user edits their message.
     // the server will check if the user is the owner of the message.
     try {
+      console.log(socketQuery);
       const url = qs.stringifyUrl({
         url: `${socketUrl}/${id}`,
         query: socketQuery,
