@@ -37,7 +37,8 @@ export function useChatQuery({
       queryKey: [queryKey],
       queryFn: fetchMessages,
       getNextPageParam: (lastPage) => lastPage?.nextCursor,
-      refetchInterval: isConnected ? false : 1000,
+      // refetchInterval: 1000, // fix for an error with invalid args in socket.io
+      refetchInterval: isConnected ? false : 1000, // this works as well, but doesn't update accordilgly
     });
 
   return {
