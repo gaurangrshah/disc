@@ -86,8 +86,10 @@ export default async function handler(
       },
     });
 
+    // create a key that channels can listen to
     const channelKey = `chat:${channelId}:messages`;
 
+    // enable this to send message to all clients (broadcast)
     res?.socket?.server?.io?.emit(channelKey, message);
 
     return res.status(200).json(message);

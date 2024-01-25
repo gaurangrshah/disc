@@ -21,10 +21,13 @@ export default function ioHandler(
 
     const io = new ServerIO(httpServer, {
       path,
-      addTrailingSlash: false, // this property might cause ts warning (use @ts-ignore to suppress)
+      // this property might cause ts warning (use @ts-ignore to suppress)
+      // note this is also defined in providers/socket-provider
+      addTrailingSlash: false,
       // cors: { origin: '*' },
     });
     res.socket.server.io = io;
   }
   res.end();
+  return;
 }

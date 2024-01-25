@@ -1,6 +1,5 @@
 'use client';
 
-import { Client } from '@clerk/nextjs/server';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 import { io as ClientIO } from 'socket.io-client';
@@ -30,16 +29,18 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const socketInstance = new (ClientIO as any)(
       process.env.NEXT_PUBLIC_SITE_URL!,
       {
-        path: '/api/socket',
+        path: '/api/socket/io',
         addTrailingSlash: false,
       }
     );
 
     socketInstance.on('connect', () => {
+      console.log('socket connected');
       setIsConnected(true);
     });
 
     socketInstance.on('disconnect', () => {
+      console.log('socket disconnected');
       setIsConnected(false);
     });
 
@@ -47,6 +48,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => {
       socketInstance.disconnect();
+      console.log('unmount: socket disconnected');
     };
   }, []);
 
