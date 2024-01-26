@@ -94,7 +94,7 @@ export const MessageFileModal = () => {
                       <FormControl>
                         <FileUpload
                           endpoint='messageFile'
-                          value={field.value}
+                          value={field?.value}
                           onChange={field.onChange}
                         />
                       </FormControl>
