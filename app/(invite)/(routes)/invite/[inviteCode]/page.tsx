@@ -16,14 +16,14 @@ export default async function InviteCodePage({ params }: InviteCodePageProps) {
     return redirectToSignIn();
   }
 
-  if (!params.inviteCode) {
+  if (!params?.inviteCode) {
     return redirect('/');
   }
 
   // check if user is already a member of the server
   const existingServer = await db.server.findFirst({
     where: {
-      inviteCode: params.inviteCode,
+      inviteCode: params?.inviteCode,
       members: {
         some: {
           profileId: profile.id,
@@ -39,7 +39,7 @@ export default async function InviteCodePage({ params }: InviteCodePageProps) {
   // add new member to server
   const server = await db.server.update({
     where: {
-      inviteCode: params.inviteCode,
+      inviteCode: params?.inviteCode,
     },
     data: {
       members: {

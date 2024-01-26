@@ -25,7 +25,7 @@ export default async function ServerIdLayout({
 
   const server = await db.server.findUnique({
     where: {
-      id: params.serverId,
+      id: params?.serverId,
       members: {
         // limit access to only servers that the current user is a member of
         some: {
@@ -42,7 +42,7 @@ export default async function ServerIdLayout({
   return (
     <div className='h-full'>
       <div className='fixed inset-y-0 z-20 hidden h-full w-60 flex-col md:flex'>
-        <ServerSidebar serverId={params.serverId} />
+        <ServerSidebar serverId={params?.serverId} />
       </div>
       <main className='h-full md:pl-60'>{children}</main>
     </div>

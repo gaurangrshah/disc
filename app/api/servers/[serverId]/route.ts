@@ -24,7 +24,7 @@ export async function PATCH(
     const { name, imageUrl } = await req.json();
 
     const server = await db.server.update({
-      where: { id: params.serverId, profileId: profile.id }, // ensures only an admin can modify server details. The same profile id used to create the server is needed to modify it.
+      where: { id: params?.serverId, profileId: profile.id }, // ensures only an admin can modify server details. The same profile id used to create the server is needed to modify it.
       data: {
         name,
         imageUrl,
@@ -57,7 +57,7 @@ export async function DELETE(
     }
 
     const server = await db.server.delete({
-      where: { id: params.serverId, profileId: profile.id },
+      where: { id: params?.serverId, profileId: profile.id },
     });
 
     return NextResponse.json(server);

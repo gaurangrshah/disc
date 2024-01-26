@@ -28,13 +28,13 @@ export default async function MemberIdPage({
     return redirectToSignIn();
   }
 
-  if (!params.memberId || !params.serverId) {
-    return redirect(params.serverId ? `/servers/${params.serverId}` : '/');
+  if (!params?.memberId || !params?.serverId) {
+    return redirect(params?.serverId ? `/servers/${params?.serverId}` : '/');
   }
 
   const currentMember = await db.member.findFirst({
     where: {
-      serverId: params.serverId,
+      serverId: params?.serverId,
       profileId: profile.id,
     },
     include: {
@@ -48,11 +48,11 @@ export default async function MemberIdPage({
 
   const conversation = await getOrCreateConversation(
     currentMember.id,
-    params.memberId
+    params?.memberId
   );
 
   if (!conversation) {
-    return redirect(`/servers/${params.serverId}`);
+    return redirect(`/servers/${params?.serverId}`);
   }
 
   const { memberOne, memberTwo } = conversation;
@@ -64,7 +64,7 @@ export default async function MemberIdPage({
       <ChatHeader
         imageUrl={otherMember.profile.imageUrl}
         name={otherMember.profile.name}
-        serverId={params.serverId}
+        serverId={params?.serverId}
         type='conversation'
       />
       {!searchParams.video && (

@@ -19,7 +19,7 @@ export async function DELETE(
       return new NextResponse('Server ID missing', { status: 400 });
     }
 
-    if (!params.memberId) {
+    if (!params?.memberId) {
       return new NextResponse('Member ID missing', { status: 400 });
     }
 
@@ -32,7 +32,7 @@ export async function DELETE(
         members: {
           deleteMany: {
             // removes member from server
-            id: params.memberId,
+            id: params?.memberId,
             profileId: {
               // ensures admin cannot be removed from server
               not: profile.id,
@@ -74,7 +74,7 @@ export async function PATCH(
       return new NextResponse('Server ID missing', { status: 400 });
     }
 
-    if (!params.memberId) {
+    if (!params?.memberId) {
       return new NextResponse('Member ID missing', { status: 400 });
     }
 
@@ -94,7 +94,7 @@ export async function PATCH(
               // ensures only the member of the server can be updated
               // and that the member cannot update their own role
               // (i.e. the server owner cannot demote themselves)
-              id: params.memberId,
+              id: params?.memberId,
               profileId: {
                 not: profile.id,
               },

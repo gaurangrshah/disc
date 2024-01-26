@@ -14,13 +14,13 @@ export async function PATCH(
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    if (!params.serverId) {
+    if (!params?.serverId) {
       return new NextResponse('Bad Request', { status: 400 });
     }
 
     const server = await db.server.update({
       where: {
-        id: params.serverId,
+        id: params?.serverId,
         profileId: {
           not: profile.id, // do not allow owner/admin to leave
         },

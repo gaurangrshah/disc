@@ -57,7 +57,7 @@ export async function PATCH(
       data: {
         channels: {
           update: {
-            where: { id: params.channelId, name: { not: 'general' } },
+            where: { id: params?.channelId, name: { not: 'general' } },
             data: { name, type },
           },
         },
@@ -115,7 +115,7 @@ export async function DELETE(
       data: {
         channels: {
           // delete channel as long as it is not named general
-          delete: { id: params.channelId, name: { not: 'general' } },
+          delete: { id: params?.channelId, name: { not: 'general' } },
         },
       },
     });
